@@ -6,7 +6,7 @@ import com.atharva.kmrlinductionplanningapplication.entity.Train;
 import com.atharva.kmrlinductionplanningapplication.enums.JobCardStatus;
 import com.atharva.kmrlinductionplanningapplication.repository.JobCardRepository;
 import com.atharva.kmrlinductionplanningapplication.repository.TrainRepository;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -14,11 +14,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
+
 public class JobCardService {
 
-    private final JobCardRepository jobCardRepository;
-    private final TrainRepository trainRepository;
+    private  JobCardRepository jobCardRepository;
+    private  TrainRepository trainRepository;
 
     public List<JobCard> getAllJobCards() {
         return jobCardRepository.findAll();
@@ -32,12 +32,20 @@ public class JobCardService {
         return jobCardRepository.findAllOpenJobCards();
     }
 
+    public List<JobCard> getCriticalOpenJobCards() {
+        return jobCardRepository.findCriticalOpenJobCards();
+    }
+
     public List<JobCard> getJobCardsByTrain(Long trainId) {
         Optional<Train> train = trainRepository.findById(trainId);
         if (train.isPresent()) {
             return jobCardRepository.findByTrain(train.get());
         }
         return List.of();
+    }
+
+    public List<JobCard> getJobCardsByTrainsetId(String trainsetId) {
+        return jobCardRepository.findByTrainsetId(trainsetId);
     }
 
     public List<JobCard> getOverdueJobCards() {
@@ -65,34 +73,52 @@ public class JobCardService {
         return false;
     }
 
-    public boolean startJobCard(String jobCardId, String technicianId) {
+    public boolean startJobCard(String jobCardId, String teamName) {
         Optional<JobCard> jobCardOpt = jobCardRepository.findById(jobCardId);
         if (jobCardOpt.isPresent()) {
             JobCard jobCard = jobCardOpt.get();
             jobCard.setStatus(JobCardStatus.INPRG);
             jobCard.setActualStart(LocalDateTime.now());
-            jobCard.setAssignedTechnicianId(technicianId);
+            jobCard.setAssignedTo(teamName);
             jobCardRepository.save(jobCard);
             return true;
         }
         return false;
     }
 
-    public boolean completeJobCard(String jobCardId, String technicianNotes, Double laborHours) {
+    public boolean completeJobCard(String jobCardId, String details, Double laborHours) {
         Optional<JobCard> jobCardOpt = jobCardRepository.findById(jobCardId);
         if (jobCardOpt.isPresent()) {
             JobCard jobCard = jobCardOpt.get();
             jobCard.setStatus(JobCardStatus.COMP);
             jobCard.setActualEnd(LocalDateTime.now());
-            jobCard.setTechnicianNotes(technicianNotes);
-            jobCard.setLaborHours(laborHours);
+            jobCard.setDetails(details);
+            jobCard.setLaborHoursLogged(laborHours);
             jobCardRepository.save(jobCard);
             return true;
         }
         return false;
     }
 
-    public List<JobCard> getJobCardsByTechnician(String technicianId) {
-        return jobCardRepository.findActiveJobCardsByTechnician(technicianId);
+    public List<JobCard> getJobCardsByTeam(String teamName) {
+        return jobCardRepository.findActiveJobCardsByTeam(teamName);
+    }
+
+    // Method to receive job card data from IBM Maximo (or similar external system)
+    public JobCard receiveJobCardFromExternalSystem(JobCard externalJobCard) {
+        // Map trainset ID to internal train ID if needed
+        Optional<Train> train = trainRepository.findByTrainNumber(externalJobCard.getTrainsetId());
+        if (train.isPresent()) {
+            externalJobCard.setTrain(train.get());
+        }
+
+        return jobCardRepository.save(externalJobCard);
+    }
+
+    // Bulk import from external system
+    public List<JobCard> receiveJobCardsFromExternalSystem(List<JobCard> externalJobCards) {
+        return externalJobCards.stream()
+                .map(this::receiveJobCardFromExternalSystem)
+                .toList();
     }
 }

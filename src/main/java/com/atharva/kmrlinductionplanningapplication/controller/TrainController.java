@@ -1,22 +1,25 @@
 package com.atharva.kmrlinductionplanningapplication.controller;
 
 
+
+
 import com.atharva.kmrlinductionplanningapplication.entity.Train;
 import com.atharva.kmrlinductionplanningapplication.service.TrainService;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/trains")
-@RequiredArgsConstructor
+
 @CrossOrigin(origins = "*")
 public class TrainController {
 
-    private final TrainService trainService;
+    private  TrainService trainService;
 
     @GetMapping
     public ResponseEntity<List<Train>> getAllTrains() {
@@ -38,8 +41,16 @@ public class TrainController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // 🔥 FIXED: Returns detailed response with branding info
     @GetMapping("/available")
-    public ResponseEntity<List<Train>> getAvailableTrains() {
+    public ResponseEntity<List<Map<String, Object>>> getAvailableTrains() {
+        List<Map<String, Object>> availableTrains = trainService.getAvailableTrainsWithDetails();
+        return ResponseEntity.ok(availableTrains);
+    }
+
+    // 🔥 NEW: Returns simple Train objects for internal use
+    @GetMapping("/available/simple")
+    public ResponseEntity<List<Train>> getAvailableTrainsSimple() {
         List<Train> availableTrains = trainService.getAvailableTrainsForInduction();
         return ResponseEntity.ok(availableTrains);
     }
