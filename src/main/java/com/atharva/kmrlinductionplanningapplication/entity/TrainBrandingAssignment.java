@@ -46,6 +46,7 @@ public class TrainBrandingAssignment {
     private String installationNotes;
 
     // Quality and condition tracking
+
     @Enumerated(EnumType.STRING)
     private BrandingCondition condition = BrandingCondition.EXCELLENT;
 

@@ -25,7 +25,7 @@ public class MileageUpdateController {
         return ResponseEntity.ok("All trains mileage updated successfully");
     }
 
-    @PostMapping("/update-train/{trainId}")
+    @PostMapping("/update-train/{trainId}" )
     public ResponseEntity<Map<String, Object>> updateTrainMileage(@PathVariable Long trainId) {
         Map<String, Object> result = mileageUpdateService.updateTrainDailyMileage(trainId);
         return ResponseEntity.ok(result);
