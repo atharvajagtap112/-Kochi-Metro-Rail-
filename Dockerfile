@@ -1,15 +1,15 @@
-# Stage 1: Build the application using Maven and JDK 1.8
+# Stage 1: Build the application using Maven and JDK 21
 FROM maven:3.9.6-eclipse-temurin-21 AS build
 
 # Set working directory inside the container
 WORKDIR /app
 
 # Copy pom.xml and download dependencies
-COPY ../KmrlInductionPlanningApplication/pom.xml .
+COPY pom.xml .
 RUN mvn dependency:go-offline
 
 # Copy the entire project and build the JAR
-COPY ../KmrlInductionPlanningApplication .
+COPY . .
 RUN mvn clean package -DskipTests
 
 # Stage 2: Create a lightweight image for running the app
