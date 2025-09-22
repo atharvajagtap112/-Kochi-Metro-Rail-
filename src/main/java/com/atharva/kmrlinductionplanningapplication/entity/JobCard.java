@@ -19,9 +19,9 @@ public class JobCard {
     @Id
     private String jobCardId; // e.g., JC-89345
 
-    @ManyToOne
-    @JoinColumn(name = "train_id", nullable = false)
-    private Train train;
+
+    @Column(name = "train_id", nullable = false)
+    private Long trainId;
 
     private String trainsetId; // e.g., TS-05 (from external system)
 
@@ -67,14 +67,14 @@ public class JobCard {
     public JobCard() {}
 
     // Parameterized constructor
-    public JobCard(String jobCardId, Train train, String trainsetId, String assetComponent,
+    public JobCard(String jobCardId, Long train, String trainsetId, String assetComponent,
                    WorkType workType, Priority priority, JobCardStatus status,
                    LocalDateTime reportedDate, LocalDateTime targetCompletionDate,
                    LocalDateTime actualStart, LocalDateTime actualEnd, String summary,
                    String details, Double laborHoursLogged, String assignedTo,
                    Boolean supervisorOverride, LocalDateTime lastUpdated) {
         this.jobCardId = jobCardId;
-        this.train = train;
+        this.trainId = train;
         this.trainsetId = trainsetId;
         this.assetComponent = assetComponent;
         this.workType = workType;
@@ -101,12 +101,12 @@ public class JobCard {
         this.jobCardId = jobCardId;
     }
 
-    public Train getTrain() {
-        return train;
+    public Long getTrainId() {
+        return trainId;
     }
 
-    public void setTrain(Train train) {
-        this.train = train;
+    public void setTrainId(Long train) {
+        this.trainId = train;
     }
 
     public String getTrainsetId() {

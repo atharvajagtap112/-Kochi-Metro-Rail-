@@ -4,8 +4,12 @@ package com.atharva.kmrlinductionplanningapplication.controller;
 
 
 import com.atharva.kmrlinductionplanningapplication.entity.Train;
+import com.atharva.kmrlinductionplanningapplication.enums.TrainStatus;
 import com.atharva.kmrlinductionplanningapplication.service.TrainService;
 
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,8 +22,11 @@ import java.util.Optional;
 
 @CrossOrigin(origins = "*")
 public class TrainController {
-
+    @Autowired
     private  TrainService trainService;
+
+
+
 
     @GetMapping
     public ResponseEntity<List<Train>> getAllTrains() {
@@ -67,33 +74,69 @@ public class TrainController {
         return ResponseEntity.ok(savedTrain);
     }
 
+    @PostMapping("/batch")
+    public ResponseEntity<List<Train>> createAllTrains(@RequestBody List<Train> trains) {
+        try {
+            if (trains.isEmpty()) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            List<Train> savedTrains = trainService.saveAllTrains(trains);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedTrains);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping("/create_all")
+    public ResponseEntity<Train> createAllTrain(@RequestBody List<Train> train) {
+        if (train.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        for (Train train1 : train) {
+            trainService.saveTrain(train1);
+        }
+        return ResponseEntity.ok().build();
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<Train> updateTrain(@PathVariable Long id, @RequestBody Train train) {
         train.setTrainId(id);
         Train updatedTrain = trainService.saveTrain(train);
         return ResponseEntity.ok(updatedTrain);
     }
+    @PutMapping("updateStatus/{id}")
+    public ResponseEntity<Train> updateTrainStatus(@PathVariable Long id,@RequestParam String status) {
+        Optional<Train> train = trainService.getTrainById(id);
+        train.get().setStatus(TrainStatus.valueOf(status.trim()));
+        Train updatedTrain = trainService.saveTrain(train.get());
+        return ResponseEntity.ok(updatedTrain);
+    }
+
+
 
     @GetMapping("/{id}/maintenance-due")
-    public ResponseEntity<Boolean> isMaintenanceDue(@PathVariable Long id) {
+    public ResponseEntity<Boolean> isMaintenanceDue(@PathVariable java.lang.Long id) {
         boolean isMaintenanceDue = trainService.isTrainMaintenanceDue(id);
         return ResponseEntity.ok(isMaintenanceDue);
     }
 
     @GetMapping("/{id}/cleaning-due")
-    public ResponseEntity<Boolean> isCleaningDue(@PathVariable Long id) {
+    public ResponseEntity<Boolean> isCleaningDue(@PathVariable java.lang.Long id) {
         boolean isCleaningDue = trainService.isTrainCleaningDue(id);
         return ResponseEntity.ok(isCleaningDue);
     }
 
+
+
     @GetMapping("/{id}/validate-for-service")
-    public ResponseEntity<Boolean> validateTrainForService(@PathVariable Long id) {
+    public ResponseEntity<Boolean> validateTrainForService(@PathVariable java.lang.Long id) {
         boolean isValid = trainService.validateTrainForService(id);
         return ResponseEntity.ok(isValid);
     }
 
     @GetMapping("/{id}/mileage-balance")
-    public ResponseEntity<Double> getMileageBalance(@PathVariable Long id) {
+    public ResponseEntity<Double> getMileageBalance(@PathVariable java.lang.Long id) {
         double mileageBalance = trainService.calculateMileageBalance(id);
         return ResponseEntity.ok(mileageBalance);
     }

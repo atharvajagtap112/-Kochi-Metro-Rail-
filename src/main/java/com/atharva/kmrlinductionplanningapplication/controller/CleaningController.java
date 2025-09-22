@@ -4,6 +4,7 @@ package com.atharva.kmrlinductionplanningapplication.controller;
 import com.atharva.kmrlinductionplanningapplication.entity.CleaningTask;
 import com.atharva.kmrlinductionplanningapplication.service.CleaningService;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +18,7 @@ import java.util.Optional;
 
 @CrossOrigin(origins = "*")
 public class CleaningController {
-
+    @Autowired
     private  CleaningService cleaningService;
 
     @GetMapping
@@ -81,6 +82,7 @@ public class CleaningController {
                                                                  @RequestBody Map<String, Object> request) {
         String cleaningType = (String) request.get("cleaningType");
         String assignedTeam = (String) request.get("assignedTeam");
+
         CleaningTask task = cleaningService.scheduleCleaningForTrain(trainId, cleaningType, assignedTeam);
         return ResponseEntity.ok(task);
     }

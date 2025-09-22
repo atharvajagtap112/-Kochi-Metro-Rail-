@@ -1,22 +1,16 @@
 package com.atharva.kmrlinductionplanningapplication.entity;
 
-
-
-
 import jakarta.persistence.*;
-
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "branding_exposure_logs")
-
 public class BrandingExposureLog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long logId;
+    private Long logId;  // ❌ Was Train logId - should be Long!
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assignment_id", nullable = false)
@@ -28,30 +22,21 @@ public class BrandingExposureLog {
     @Column(nullable = false)
     private Integer hoursExposed;
 
-    // 🔥 NEW: Mileage tracking for branding
     @Column(nullable = false)
     private Double mileageCovered = 0.0;
 
     private Double startOdometer;
-
     private Double endOdometer;
-
-    // Route and service details
     private String routesCovered;
-
     private Integer totalTrips;
-
     private Integer passengerCount;
 
-    // Service quality tracking
     private LocalDateTime serviceStartTime;
-
     private LocalDateTime serviceEndTime;
 
     @Enumerated(EnumType.STRING)
     private ServiceType serviceType = ServiceType.REGULAR;
 
-    // Exposure effectiveness
     @Enumerated(EnumType.STRING)
     private ExposureQuality exposureQuality = ExposureQuality.NORMAL;
 
@@ -61,14 +46,11 @@ public class BrandingExposureLog {
     @Column(columnDefinition = "TEXT")
     private String routeDetails;
 
-    // Weather and visibility factors
     @Enumerated(EnumType.STRING)
     private WeatherCondition weatherCondition;
 
-    private Double visibilityScore = 1.0; // 1.0 = normal, 0.5 = reduced visibility
-
+    private Double visibilityScore = 1.0;
     private String loggedBy;
-
     private LocalDateTime lastUpdated;
 
     public enum ServiceType {
@@ -89,18 +71,15 @@ public class BrandingExposureLog {
         this.lastUpdated = LocalDateTime.now();
     }
 
-
+    // Constructors
     public BrandingExposureLog() {}
 
-    // Parameterized constructor
-    public BrandingExposureLog(Long logId, TrainBrandingAssignment trainBrandingAssignment,
-                               LocalDate logDate, Integer hoursExposed, Double mileageCovered,
-                               Double startOdometer, Double endOdometer, String routesCovered,
-                               Integer totalTrips, Integer passengerCount, LocalDateTime serviceStartTime,
-                               LocalDateTime serviceEndTime, ServiceType serviceType,
-                               ExposureQuality exposureQuality, String remarks, String routeDetails,
-                               WeatherCondition weatherCondition, Double visibilityScore,
-                               String loggedBy, LocalDateTime lastUpdated) {
+    // Getters and Setters
+    public Long getLogId() {
+        return logId;
+    }
+
+    public BrandingExposureLog(Long logId, TrainBrandingAssignment trainBrandingAssignment, LocalDate logDate, Integer hoursExposed, Double mileageCovered, Double startOdometer, Double endOdometer, String routesCovered, Integer totalTrips, Integer passengerCount, LocalDateTime serviceStartTime, LocalDateTime serviceEndTime, ServiceType serviceType, ExposureQuality exposureQuality, String remarks, String routeDetails, WeatherCondition weatherCondition, Double visibilityScore, String loggedBy, LocalDateTime lastUpdated) {
         this.logId = logId;
         this.trainBrandingAssignment = trainBrandingAssignment;
         this.logDate = logDate;
@@ -123,15 +102,11 @@ public class BrandingExposureLog {
         this.lastUpdated = lastUpdated;
     }
 
-    // Getters and Setters
-    public Long getLogId() {
-        return logId;
-    }
-
     public void setLogId(Long logId) {
         this.logId = logId;
     }
 
+    // ... rest of getters and setters (same as before but logId is Long)
     public TrainBrandingAssignment getTrainBrandingAssignment() {
         return trainBrandingAssignment;
     }
@@ -139,6 +114,8 @@ public class BrandingExposureLog {
     public void setTrainBrandingAssignment(TrainBrandingAssignment trainBrandingAssignment) {
         this.trainBrandingAssignment = trainBrandingAssignment;
     }
+
+
 
     public LocalDate getLogDate() {
         return logDate;
@@ -283,7 +260,4 @@ public class BrandingExposureLog {
     public void setLastUpdated(LocalDateTime lastUpdated) {
         this.lastUpdated = lastUpdated;
     }
-
-
-
 }

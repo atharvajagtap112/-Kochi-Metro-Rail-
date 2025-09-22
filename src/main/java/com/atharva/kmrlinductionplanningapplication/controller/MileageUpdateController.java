@@ -4,6 +4,7 @@ package com.atharva.kmrlinductionplanningapplication.controller;
 import com.atharva.kmrlinductionplanningapplication.entity.TripHistory;
 import com.atharva.kmrlinductionplanningapplication.service.DailyMileageUpdateService;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +17,7 @@ import java.util.Map;
 
 @CrossOrigin(origins = "*")
 public class MileageUpdateController {
-
+    @Autowired
     private  DailyMileageUpdateService mileageUpdateService;
 
     @PostMapping("/update-all-trains")

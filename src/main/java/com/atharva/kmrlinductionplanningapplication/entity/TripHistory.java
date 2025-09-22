@@ -1,46 +1,29 @@
 package com.atharva.kmrlinductionplanningapplication.entity;
 
-
-
 import jakarta.persistence.*;
-
-
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "trip_history")
-
 public class TripHistory {
 
     @Id
     private String tripId;
 
-    @ManyToOne
-    @JoinColumn(name = "train_id", nullable = false)
-    private Train train;
+    @Column(name = "train_id", nullable = false)
+    private Long trainId;
 
     private String routeId;
-
     private LocalDateTime tripStartTime;
-
     private LocalDateTime tripEndTime;
-
     private Double routeDistance;
-
     private Integer tripDuration; // in minutes
-
     private String crewId;
-
     private LocalDateTime stablingStartTime;
-
     private LocalDateTime stablingEndTime;
-
     private Double tripMileage;
-
     private Double passengerLoadFactor;
-
     private Double energyConsumption;
-
     private LocalDateTime lastUpdated;
 
     @PrePersist
@@ -49,17 +32,16 @@ public class TripHistory {
         this.lastUpdated = LocalDateTime.now();
     }
 
-    // Default constructor
+    // Constructors
     public TripHistory() {}
 
-    // Parameterized constructor
-    public TripHistory(String tripId, Train train, String routeId, LocalDateTime tripStartTime,
+    public TripHistory(String tripId, Long trainId, String routeId, LocalDateTime tripStartTime,
                        LocalDateTime tripEndTime, Double routeDistance, Integer tripDuration,
                        String crewId, LocalDateTime stablingStartTime, LocalDateTime stablingEndTime,
                        Double tripMileage, Double passengerLoadFactor, Double energyConsumption,
                        LocalDateTime lastUpdated) {
         this.tripId = tripId;
-        this.train = train;
+        this.trainId = trainId;
         this.routeId = routeId;
         this.tripStartTime = tripStartTime;
         this.tripEndTime = tripEndTime;
@@ -75,115 +57,45 @@ public class TripHistory {
     }
 
     // Getters and Setters
-    public String getTripId() {
-        return tripId;
-    }
+    public String getTripId() { return tripId; }
+    public void setTripId(String tripId) { this.tripId = tripId; }
 
-    public void setTripId(String tripId) {
-        this.tripId = tripId;
-    }
+    public Long getTrainId() { return trainId; }
+    public void setTrainId(Long trainId) { this.trainId = trainId; }
 
-    public Train getTrain() {
-        return train;
-    }
+    public String getRouteId() { return routeId; }
+    public void setRouteId(String routeId) { this.routeId = routeId; }
 
-    public void setTrain(Train train) {
-        this.train = train;
-    }
+    public LocalDateTime getTripStartTime() { return tripStartTime; }
+    public void setTripStartTime(LocalDateTime tripStartTime) { this.tripStartTime = tripStartTime; }
 
-    public String getRouteId() {
-        return routeId;
-    }
+    public LocalDateTime getTripEndTime() { return tripEndTime; }
+    public void setTripEndTime(LocalDateTime tripEndTime) { this.tripEndTime = tripEndTime; }
 
-    public void setRouteId(String routeId) {
-        this.routeId = routeId;
-    }
+    public Double getRouteDistance() { return routeDistance; }
+    public void setRouteDistance(Double routeDistance) { this.routeDistance = routeDistance; }
 
-    public LocalDateTime getTripStartTime() {
-        return tripStartTime;
-    }
+    public Integer getTripDuration() { return tripDuration; }
+    public void setTripDuration(Integer tripDuration) { this.tripDuration = tripDuration; }
 
-    public void setTripStartTime(LocalDateTime tripStartTime) {
-        this.tripStartTime = tripStartTime;
-    }
+    public String getCrewId() { return crewId; }
+    public void setCrewId(String crewId) { this.crewId = crewId; }
 
-    public LocalDateTime getTripEndTime() {
-        return tripEndTime;
-    }
+    public LocalDateTime getStablingStartTime() { return stablingStartTime; }
+    public void setStablingStartTime(LocalDateTime stablingStartTime) { this.stablingStartTime = stablingStartTime; }
 
-    public void setTripEndTime(LocalDateTime tripEndTime) {
-        this.tripEndTime = tripEndTime;
-    }
+    public LocalDateTime getStablingEndTime() { return stablingEndTime; }
+    public void setStablingEndTime(LocalDateTime stablingEndTime) { this.stablingEndTime = stablingEndTime; }
 
-    public Double getRouteDistance() {
-        return routeDistance;
-    }
+    public Double getTripMileage() { return tripMileage; }
+    public void setTripMileage(Double tripMileage) { this.tripMileage = tripMileage; }
 
-    public void setRouteDistance(Double routeDistance) {
-        this.routeDistance = routeDistance;
-    }
+    public Double getPassengerLoadFactor() { return passengerLoadFactor; }
+    public void setPassengerLoadFactor(Double passengerLoadFactor) { this.passengerLoadFactor = passengerLoadFactor; }
 
-    public Integer getTripDuration() {
-        return tripDuration;
-    }
+    public Double getEnergyConsumption() { return energyConsumption; }
+    public void setEnergyConsumption(Double energyConsumption) { this.energyConsumption = energyConsumption; }
 
-    public void setTripDuration(Integer tripDuration) {
-        this.tripDuration = tripDuration;
-    }
-
-    public String getCrewId() {
-        return crewId;
-    }
-
-    public void setCrewId(String crewId) {
-        this.crewId = crewId;
-    }
-
-    public LocalDateTime getStablingStartTime() {
-        return stablingStartTime;
-    }
-
-    public void setStablingStartTime(LocalDateTime stablingStartTime) {
-        this.stablingStartTime = stablingStartTime;
-    }
-
-    public LocalDateTime getStablingEndTime() {
-        return stablingEndTime;
-    }
-
-    public void setStablingEndTime(LocalDateTime stablingEndTime) {
-        this.stablingEndTime = stablingEndTime;
-    }
-
-    public Double getTripMileage() {
-        return tripMileage;
-    }
-
-    public void setTripMileage(Double tripMileage) {
-        this.tripMileage = tripMileage;
-    }
-
-    public Double getPassengerLoadFactor() {
-        return passengerLoadFactor;
-    }
-
-    public void setPassengerLoadFactor(Double passengerLoadFactor) {
-        this.passengerLoadFactor = passengerLoadFactor;
-    }
-
-    public Double getEnergyConsumption() {
-        return energyConsumption;
-    }
-
-    public void setEnergyConsumption(Double energyConsumption) {
-        this.energyConsumption = energyConsumption;
-    }
-
-    public LocalDateTime getLastUpdated() {
-        return lastUpdated;
-    }
-
-    public void setLastUpdated(LocalDateTime lastUpdated) {
-        this.lastUpdated = lastUpdated;
-    }
+    public LocalDateTime getLastUpdated() { return lastUpdated; }
+    public void setLastUpdated(LocalDateTime lastUpdated) { this.lastUpdated = lastUpdated; }
 }

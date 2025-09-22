@@ -1,19 +1,14 @@
 package com.atharva.kmrlinductionplanningapplication.entity;
 
-
-
-
 import com.atharva.kmrlinductionplanningapplication.enums.TrainStatus;
 import jakarta.persistence.*;
-
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "trains")
-
 public class Train {
 
     @Id
@@ -29,37 +24,35 @@ public class Train {
     private TrainStatus status;
 
     private Double currentOdometer;
-
     private LocalDate lastMaintenanceDate;
-
     private Double odometerAtLastMaintenance;
-
-    private Double maintenanceInterval = 3500.0; // Default 3500 km
-
+    private Double maintenanceInterval = 3500.0;
     private LocalDateTime lastCleaningDateTime;
-
-    private Integer cleaningPeriod = 12; // Default 72 hours
-
-    private Double dailyMaxMileage = 1000.0; // Default 1000 km
-
+    private Integer cleaningPeriod = 12;
+    private Double dailyMaxMileage = 1000.0;
     private String depotLocation;
-
     private LocalDateTime lastUpdated;
 
-    @OneToMany(mappedBy = "train", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<JobCard> jobCards;
 
-    @OneToMany(mappedBy = "train", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<FitnessCertificate> fitnessCertificates;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "train_id")
+    private List<JobCard> jobCards = new ArrayList<>();
 
-    @OneToMany(mappedBy = "train", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<TrainBrandingAssignment> brandingAssignments;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "train_id")
+    private List<FitnessCertificate> fitnessCertificates = new ArrayList<>();
 
-    @OneToMany(mappedBy = "train", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<CleaningTask> cleaningTasks;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "train_id")
+    private List<TrainBrandingAssignment> brandingAssignments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "train", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<TripHistory> tripHistories;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "train_id")
+    private List<CleaningTask> cleaningTasks = new ArrayList<>();
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "train_id")
+    private List<TripHistory> tripHistories = new ArrayList<>();
 
     @PrePersist
     @PreUpdate
@@ -67,40 +60,10 @@ public class Train {
         this.lastUpdated = LocalDateTime.now();
     }
 
-
-    // Default constructor
+    // Constructors
     public Train() {}
 
-    // Parameterized constructor
-    public Train(Long trainId, String trainNumber, LocalDate commissioningDate,
-                 TrainStatus status, Double currentOdometer, LocalDate lastMaintenanceDate,
-                 Double odometerAtLastMaintenance, Double maintenanceInterval,
-                 LocalDateTime lastCleaningDateTime, Integer cleaningPeriod,
-                 Double dailyMaxMileage, String depotLocation, LocalDateTime lastUpdated,
-                 List<JobCard> jobCards, List<FitnessCertificate> fitnessCertificates,
-                 List<TrainBrandingAssignment> brandingAssignments, List<CleaningTask> cleaningTasks,
-                 List<TripHistory> tripHistories) {
-        this.trainId = trainId;
-        this.trainNumber = trainNumber;
-        this.commissioningDate = commissioningDate;
-        this.status = status;
-        this.currentOdometer = currentOdometer;
-        this.lastMaintenanceDate = lastMaintenanceDate;
-        this.odometerAtLastMaintenance = odometerAtLastMaintenance;
-        this.maintenanceInterval = maintenanceInterval;
-        this.lastCleaningDateTime = lastCleaningDateTime;
-        this.cleaningPeriod = cleaningPeriod;
-        this.dailyMaxMileage = dailyMaxMileage;
-        this.depotLocation = depotLocation;
-        this.lastUpdated = lastUpdated;
-        this.jobCards = jobCards;
-        this.fitnessCertificates = fitnessCertificates;
-        this.brandingAssignments = brandingAssignments;
-        this.cleaningTasks = cleaningTasks;
-        this.tripHistories = tripHistories;
-    }
-
-    // Getters and Setters
+    // Getters and Setters (same as before)
     public Long getTrainId() {
         return trainId;
     }
@@ -244,5 +207,4 @@ public class Train {
     public void setTripHistories(List<TripHistory> tripHistories) {
         this.tripHistories = tripHistories;
     }
-
 }

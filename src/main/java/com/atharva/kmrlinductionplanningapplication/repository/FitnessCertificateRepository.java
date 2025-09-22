@@ -14,15 +14,21 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Repository
-public interface FitnessCertificateRepository extends JpaRepository<FitnessCertificate, Long> {
+public interface FitnessCertificateRepository extends JpaRepository<FitnessCertificate, java.lang.Long> {
 
-    List<FitnessCertificate> findByTrain(Train train);
+    // ✅ Using trainId - matches your entity field
+    List<FitnessCertificate> findByTrainId(Long trainId);
+
+
+
+
 
     List<FitnessCertificate> findByStatus(CertificateStatus status);
 
     List<FitnessCertificate> findByDepartment(Department department);
 
-    List<FitnessCertificate> findByTrainAndDepartment(Train train, Department department);
+    // ✅ Replaced Train with trainId
+    List<FitnessCertificate> findByTrainIdAndDepartment(Long trainId, Department department);
 
     @Query("SELECT fc FROM FitnessCertificate fc WHERE fc.expiryDate < :currentDate")
     List<FitnessCertificate> findExpiredCertificates(@Param("currentDate") LocalDate currentDate);
@@ -31,10 +37,13 @@ public interface FitnessCertificateRepository extends JpaRepository<FitnessCerti
     List<FitnessCertificate> findCertificatesExpiringWithinDays(@Param("currentDate") LocalDate currentDate,
                                                                 @Param("warningDate") LocalDate warningDate);
 
-    @Query("SELECT fc FROM FitnessCertificate fc WHERE fc.train.trainId = :trainId AND fc.status = 'VALID'")
+    // ✅ Fixed: Use trainId field directly
+    @Query("SELECT fc FROM FitnessCertificate fc WHERE fc.trainId = :trainId AND fc.status = 'VALID'")
     List<FitnessCertificate> findValidCertificatesByTrainId(@Param("trainId") Long trainId);
 
-    @Query("SELECT CASE WHEN COUNT(fc) = 3 THEN true ELSE false END FROM FitnessCertificate fc " +
-            "WHERE fc.train.trainId = :trainId AND fc.status = 'VALID' AND fc.expiryDate >= :currentDate")
+    @Query("SELECT CASE WHEN COUNT(fc) = 0 THEN true ELSE false END FROM FitnessCertificate fc " +
+            "WHERE fc.trainId = :trainId AND (fc.status != 'VALID' OR fc.expiryDate < :currentDate)")
     boolean hasAllValidCertificates(@Param("trainId") Long trainId, @Param("currentDate") LocalDate currentDate);
+
+
 }

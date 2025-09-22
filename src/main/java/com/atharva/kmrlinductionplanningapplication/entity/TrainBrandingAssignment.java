@@ -11,16 +11,14 @@ import java.util.List;
 
 @Entity
 @Table(name = "train_branding_assignments")
-
 public class TrainBrandingAssignment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long assignmentId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "train_id", nullable = false)
-    private Train train;
+    @Column(name = "train_id", nullable = false)
+    private Long trainId;;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contract_id", nullable = false)
@@ -48,7 +46,7 @@ public class TrainBrandingAssignment {
     // Quality and condition tracking
 
     @Enumerated(EnumType.STRING)
-    private BrandingCondition condition = BrandingCondition.EXCELLENT;
+    private BrandingCondition brandingCondition = BrandingCondition.EXCELLENT;
 
     private LocalDate lastInspectionDate;
 
@@ -85,15 +83,9 @@ public class TrainBrandingAssignment {
     // Default constructor
     public TrainBrandingAssignment() {}
 
-    // Parameterized constructor
-    public TrainBrandingAssignment(Long assignmentId, Train train, BrandingContract brandingContract,
-                                   LocalDate assignmentDate, LocalDate removalDate, Integer totalHoursExposed,
-                                   Double totalMileageExposed, LocalDate installationDate, String installationTeam,
-                                   String installationNotes, BrandingCondition condition, LocalDate lastInspectionDate,
-                                   String conditionNotes, Integer targetDailyHours, Double averageDailyMileage,
-                                   AssignmentStatus status, LocalDateTime lastUpdated, List<BrandingExposureLog> exposureLogs) {
+    public TrainBrandingAssignment(Long assignmentId, Long trainId, BrandingContract brandingContract, LocalDate assignmentDate, LocalDate removalDate, Integer totalHoursExposed, Double totalMileageExposed, LocalDate installationDate, String installationTeam, String installationNotes, BrandingCondition brandingCondition, LocalDate lastInspectionDate, String conditionNotes, Integer targetDailyHours, Double averageDailyMileage, AssignmentStatus status, LocalDateTime lastUpdated, List<BrandingExposureLog> exposureLogs) {
         this.assignmentId = assignmentId;
-        this.train = train;
+        this.trainId = trainId;
         this.brandingContract = brandingContract;
         this.assignmentDate = assignmentDate;
         this.removalDate = removalDate;
@@ -102,7 +94,7 @@ public class TrainBrandingAssignment {
         this.installationDate = installationDate;
         this.installationTeam = installationTeam;
         this.installationNotes = installationNotes;
-        this.condition = condition;
+        this.brandingCondition = brandingCondition;
         this.lastInspectionDate = lastInspectionDate;
         this.conditionNotes = conditionNotes;
         this.targetDailyHours = targetDailyHours;
@@ -113,20 +105,20 @@ public class TrainBrandingAssignment {
     }
 
     // Getters and Setters
-    public Long getAssignmentId() {
+    public java.lang.Long getAssignmentId() {
         return assignmentId;
     }
 
-    public void setAssignmentId(Long assignmentId) {
+    public void setAssignmentId(java.lang.Long assignmentId) {
         this.assignmentId = assignmentId;
     }
 
-    public Train getTrain() {
-        return train;
+    public Long getTrainId() {
+        return trainId;
     }
 
-    public void setTrain(Train train) {
-        this.train = train;
+    public void setTrainId(Long trainId) {
+        this.trainId = trainId;
     }
 
     public BrandingContract getBrandingContract() {
@@ -193,12 +185,12 @@ public class TrainBrandingAssignment {
         this.installationNotes = installationNotes;
     }
 
-    public BrandingCondition getCondition() {
-        return condition;
+    public BrandingCondition getBrandingCondition() {
+        return brandingCondition;
     }
 
-    public void setCondition(BrandingCondition condition) {
-        this.condition = condition;
+    public void setBrandingCondition(BrandingCondition condition) {
+        this.brandingCondition = condition;
     }
 
     public LocalDate getLastInspectionDate() {

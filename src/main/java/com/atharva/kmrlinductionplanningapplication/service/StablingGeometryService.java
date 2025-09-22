@@ -9,7 +9,6 @@ import com.atharva.kmrlinductionplanningapplication.repository.TrainRepository;
 
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +20,11 @@ public class StablingGeometryService {
 
     private  StablingGeometryRepository stablingRepository;
     private  TrainRepository trainRepository;
+
+    public StablingGeometryService(StablingGeometryRepository stablingRepository, TrainRepository trainRepository) {
+        this.stablingRepository = stablingRepository;
+        this.trainRepository = trainRepository;
+    }
 
     public List<StablingGeometry> getAllBays() {
         return stablingRepository.findAll();

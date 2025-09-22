@@ -1,12 +1,12 @@
 package com.atharva.kmrlinductionplanningapplication.service;
 
-
 import com.atharva.kmrlinductionplanningapplication.entity.CleaningTask;
 import com.atharva.kmrlinductionplanningapplication.entity.Train;
 import com.atharva.kmrlinductionplanningapplication.enums.CleaningType;
 import com.atharva.kmrlinductionplanningapplication.repository.CleaningTaskRepository;
 import com.atharva.kmrlinductionplanningapplication.repository.TrainRepository;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -17,11 +17,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-
 public class CleaningService {
-
-    private  CleaningTaskRepository cleaningTaskRepository;
-    private  TrainRepository trainRepository;
+    @Autowired
+    private CleaningTaskRepository cleaningTaskRepository;
+    @Autowired
+    private TrainRepository trainRepository;
 
     public List<CleaningTask> getAllCleaningTasks() {
         return cleaningTaskRepository.findAll();
@@ -31,12 +31,9 @@ public class CleaningService {
         return cleaningTaskRepository.findById(taskId);
     }
 
+    // ✅ Fixed to use trainId
     public List<CleaningTask> getCleaningTasksByTrain(Long trainId) {
-        Optional<Train> train = trainRepository.findById(trainId);
-        if (train.isPresent()) {
-            return cleaningTaskRepository.findByTrain(train.get());
-        }
-        return List.of();
+        return cleaningTaskRepository.findByTrainId(trainId);
     }
 
     public List<CleaningTask> getActiveCleaningTasks() {
@@ -54,7 +51,7 @@ public class CleaningService {
     }
 
     public List<Long> getTrainsNeedingCleaning() {
-        LocalDateTime cleaningDueTime = LocalDateTime.now().minusHours(24); // 24 hours ago
+        LocalDateTime cleaningDueTime = LocalDateTime.now().minusHours(24);
         return trainRepository.findTrainsRequiringCleaning(cleaningDueTime)
                 .stream()
                 .map(Train::getTrainId)
@@ -69,25 +66,24 @@ public class CleaningService {
         return cleaningTaskRepository.save(cleaningTask);
     }
 
+    // ✅ Fixed to use trainId
     public CleaningTask scheduleCleaningForTrain(Long trainId, String cleaningTypeStr, String assignedTeam) {
         Optional<Train> trainOpt = trainRepository.findById(trainId);
         if (trainOpt.isEmpty()) {
             throw new RuntimeException("Train not found with ID: " + trainId);
         }
 
-        Train train = trainOpt.get();
         CleaningType cleaningType = CleaningType.valueOf(cleaningTypeStr.toUpperCase());
 
         CleaningTask task = new CleaningTask();
         task.setTaskId(generateTaskId());
-        task.setTrain(train);
+        task.setTrainId(trainId); // ✅ Using trainId directly
         task.setCleaningType(cleaningType);
         task.setAssignedTeamId(assignedTeam);
         task.setStatus(CleaningTask.TaskStatus.SCHEDULED);
 
-        // Schedule for tonight (default cleaning time: 22:00 - 02:00)
         LocalDateTime tonight = LocalDate.now().atTime(22, 0);
-        LocalDateTime endTime = tonight.plusHours(4); // 4 hours for cleaning
+        LocalDateTime endTime = tonight.plusHours(4);
 
         task.setScheduledStart(tonight);
         task.setScheduledEnd(endTime);
@@ -111,7 +107,6 @@ public class CleaningService {
                 scheduledTasks.add(task);
                 teamIndex++;
             } catch (Exception e) {
-                // Log error and continue with next train
                 System.err.println("Failed to schedule cleaning for train " + trainId + ": " + e.getMessage());
             }
         }
@@ -135,6 +130,7 @@ public class CleaningService {
         return false;
     }
 
+    // ✅ Fixed to use trainId
     public boolean completeCleaningTask(String taskId, String remarks) {
         Optional<CleaningTask> taskOpt = cleaningTaskRepository.findById(taskId);
         if (taskOpt.isPresent()) {
@@ -144,9 +140,12 @@ public class CleaningService {
             task.setRemarks(remarks);
 
             // Update train's last cleaning time
-            Train train = task.getTrain();
-            train.setLastCleaningDateTime(LocalDateTime.now());
-            trainRepository.save(train);
+            Optional<Train> trainOpt = trainRepository.findById(task.getTrainId());
+            if (trainOpt.isPresent()) {
+                Train train = trainOpt.get();
+                train.setLastCleaningDateTime(LocalDateTime.now());
+                trainRepository.save(train);
+            }
 
             cleaningTaskRepository.save(task);
             return true;

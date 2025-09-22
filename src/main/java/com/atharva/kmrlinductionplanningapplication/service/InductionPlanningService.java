@@ -20,6 +20,15 @@ public class InductionPlanningService {
     private  BrandingService brandingService;
     private  StablingGeometryService stablingService;
 
+    public InductionPlanningService(TrainService trainService, JobCardService jobCardService, FitnessCertificateService certificateService, CleaningService cleaningService, BrandingService brandingService, StablingGeometryService stablingService) {
+        this.trainService = trainService;
+        this.jobCardService = jobCardService;
+        this.certificateService = certificateService;
+        this.cleaningService = cleaningService;
+        this.brandingService = brandingService;
+        this.stablingService = stablingService;
+    }
+
     public Map<String, Object> generateInductionPlan() {
         Map<String, Object> plan = new HashMap<>();
 
@@ -29,7 +38,7 @@ public class InductionPlanningService {
         List<Train> maintenanceTrains = trainService.getTrainsInMaintenance();
 
         // Check all 6 parameters for each train
-        Map<Long, Map<String, Object>> trainStatuses = new HashMap<>();
+        Map<java.lang.Long, Map<String, Object>> trainStatuses = new HashMap<>();
 
         for (Train train : allTrains) {
             Map<String, Object> status = evaluateTrainReadiness(train);
@@ -37,7 +46,7 @@ public class InductionPlanningService {
         }
 
         // Generate recommendations
-        List<Long> recommendedForService = availableTrains.stream()
+        List<java.lang.Long> recommendedForService = availableTrains.stream()
                 .filter(train -> {
                     Map<String, Object> status = trainStatuses.get(train.getTrainId());
                     return (Boolean) status.get("readyForService");

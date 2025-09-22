@@ -4,6 +4,9 @@ package com.atharva.kmrlinductionplanningapplication.controller;
 import com.atharva.kmrlinductionplanningapplication.entity.JobCard;
 import com.atharva.kmrlinductionplanningapplication.service.JobCardService;
 ;
+import jakarta.transaction.Status;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +19,7 @@ import java.util.Optional;
 
 @CrossOrigin(origins = "*")
 public class JobCardController {
-
+    @Autowired
     private  JobCardService jobCardService;
 
     @GetMapping
@@ -72,6 +75,16 @@ public class JobCardController {
     public ResponseEntity<JobCard> createJobCard(@RequestBody JobCard jobCard) {
         JobCard savedJobCard = jobCardService.createJobCard(jobCard);
         return ResponseEntity.ok(savedJobCard);
+    }
+
+    @PostMapping("/create_all")
+    public ResponseEntity<List<JobCard>> createAllJobCard(@RequestBody List<JobCard> jobCards) {
+        if (jobCards.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        for (JobCard cards:jobCards){
+                 jobCardService.createJobCard(cards);}
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     // Endpoint to receive job card data from IBM Maximo or external systems

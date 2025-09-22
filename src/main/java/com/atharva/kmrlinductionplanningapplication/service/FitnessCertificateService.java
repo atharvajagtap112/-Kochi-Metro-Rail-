@@ -20,18 +20,23 @@ public class FitnessCertificateService {
     private  FitnessCertificateRepository certificateRepository;
     private  TrainRepository trainRepository;
 
+    public FitnessCertificateService(FitnessCertificateRepository certificateRepository, TrainRepository trainRepository) {
+        this.certificateRepository = certificateRepository;
+        this.trainRepository = trainRepository;
+    }
+
     public List<FitnessCertificate> getAllCertificates() {
         return certificateRepository.findAll();
     }
 
-    public Optional<FitnessCertificate> getCertificateById(Long id) {
+    public Optional<FitnessCertificate> getCertificateById(java.lang.Long id) {
         return certificateRepository.findById(id);
     }
 
-    public List<FitnessCertificate> getCertificatesByTrain(Long trainId) {
+    public List<FitnessCertificate> getCertificatesByTrainId(Long trainId) {
         Optional<Train> train = trainRepository.findById(trainId);
         if (train.isPresent()) {
-            return certificateRepository.findByTrain(train.get());
+            return certificateRepository.findByTrainId(train.get().getTrainId());
         }
         return List.of();
     }
@@ -46,11 +51,11 @@ public class FitnessCertificateService {
         return certificateRepository.findCertificatesExpiringWithinDays(currentDate, warningDate);
     }
 
-    public boolean hasAllValidCertificates(Long trainId) {
+    public boolean hasAllValidCertificates(java.lang.Long trainId) {
         return certificateRepository.hasAllValidCertificates(trainId, LocalDate.now());
     }
 
-    public String getTrainCertificationStatus(Long trainId) {
+    public String getTrainCertificationStatus(java.lang.Long trainId) {
         List<FitnessCertificate> validCerts = certificateRepository.findValidCertificatesByTrainId(trainId);
 
         if (validCerts.size() == 3) {
@@ -70,7 +75,7 @@ public class FitnessCertificateService {
         return certificateRepository.save(certificate);
     }
 
-    public boolean revokeCertificate(Long certificateId) {
+    public boolean revokeCertificate(java.lang.Long certificateId) {
         Optional<FitnessCertificate> certOpt = certificateRepository.findById(certificateId);
         if (certOpt.isPresent()) {
             FitnessCertificate certificate = certOpt.get();
@@ -81,7 +86,7 @@ public class FitnessCertificateService {
         return false;
     }
 
-    public boolean deleteCertificate(Long certificateId) {
+    public boolean deleteCertificate(java.lang.Long certificateId) {
         if (certificateRepository.existsById(certificateId)) {
             certificateRepository.deleteById(certificateId);
             return true;

@@ -11,9 +11,11 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface TrainBrandingAssignmentRepository extends JpaRepository<TrainBrandingAssignment, Long> {
+public interface TrainBrandingAssignmentRepository extends JpaRepository<TrainBrandingAssignment, java.lang.Long> {
 
-    List<TrainBrandingAssignment> findByTrain(Train train);
+
+    List<TrainBrandingAssignment> findByTrainId(Long trainId);
+
 
     List<TrainBrandingAssignment> findByBrandingContract(BrandingContract brandingContract);
 }

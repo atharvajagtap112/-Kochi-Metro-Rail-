@@ -1,6 +1,5 @@
 package com.atharva.kmrlinductionplanningapplication.service;
 
-
 import com.atharva.kmrlinductionplanningapplication.entity.BrandingContract;
 import com.atharva.kmrlinductionplanningapplication.entity.BrandingExposureLog;
 import com.atharva.kmrlinductionplanningapplication.entity.Train;
@@ -19,13 +18,22 @@ import java.util.Map;
 import java.util.Optional;
 
 @Service
-
 public class BrandingService {
 
-    private  BrandingContractRepository contractRepository;
-    private  TrainBrandingAssignmentRepository assignmentRepository;
-    private  BrandingExposureLogRepository exposureLogRepository;
-    private  TrainRepository trainRepository;
+    private final BrandingContractRepository contractRepository;
+    private final TrainBrandingAssignmentRepository assignmentRepository;
+    private final BrandingExposureLogRepository exposureLogRepository;
+    private final TrainRepository trainRepository;
+
+    public BrandingService(BrandingContractRepository contractRepository,
+                           TrainBrandingAssignmentRepository assignmentRepository,
+                           BrandingExposureLogRepository exposureLogRepository,
+                           TrainRepository trainRepository) {
+        this.contractRepository = contractRepository;
+        this.assignmentRepository = assignmentRepository;
+        this.exposureLogRepository = exposureLogRepository;
+        this.trainRepository = trainRepository;
+    }
 
     // CONTRACT METHODS
     public List<BrandingContract> getAllContracts() {
@@ -50,12 +58,9 @@ public class BrandingService {
         return assignmentRepository.findAll();
     }
 
+    // ✅ Fixed to use trainId
     public List<TrainBrandingAssignment> getAssignmentsByTrain(Long trainId) {
-        Optional<Train> train = trainRepository.findById(trainId);
-        if (train.isPresent()) {
-            return assignmentRepository.findByTrain(train.get());
-        }
-        return List.of();
+        return assignmentRepository.findByTrainId(trainId);
     }
 
     public List<TrainBrandingAssignment> getAssignmentsByContract(Long contractId) {
@@ -71,6 +76,7 @@ public class BrandingService {
         return assignmentRepository.save(assignment);
     }
 
+    // ✅ Fixed to use trainId
     public TrainBrandingAssignment assignBrandingToTrain(Long trainId, Long contractId) {
         Optional<Train> trainOpt = trainRepository.findById(trainId);
         Optional<BrandingContract> contractOpt = contractRepository.findById(contractId);
@@ -80,7 +86,7 @@ public class BrandingService {
         }
 
         TrainBrandingAssignment assignment = new TrainBrandingAssignment();
-        assignment.setTrain(trainOpt.get());
+        assignment.setTrainId(trainId); // ✅ Now using trainId
         assignment.setBrandingContract(contractOpt.get());
         assignment.setAssignmentDate(LocalDate.now());
         assignment.setTotalHoursExposed(0);
@@ -100,14 +106,14 @@ public class BrandingService {
     }
 
     public BrandingExposureLog logExposureForTrain(Long trainId, Integer hoursExposed, String remarks) {
-        // Find active branding assignment for this train
+        // ✅ Fixed to use trainId
         List<TrainBrandingAssignment> assignments = getAssignmentsByTrain(trainId);
 
         if (assignments.isEmpty()) {
             throw new RuntimeException("No branding assignment found for train ID: " + trainId);
         }
 
-        // Use the first active assignment (in real scenario, you might need more logic)
+        // Use the first active assignment
         TrainBrandingAssignment assignment = assignments.get(0);
 
         BrandingExposureLog log = new BrandingExposureLog();
@@ -152,12 +158,13 @@ public class BrandingService {
         report.put("totalHoursExposed", totalHoursExposed);
         report.put("remainingHours", remainingHours);
         report.put("completionPercentage", completionPercentage);
-        report.put("isAtRisk", completionPercentage < 80); // 80% threshold
+        report.put("isAtRisk", completionPercentage < 80);
         report.put("assignments", assignments);
 
         return report;
     }
 
+    // ✅ Fixed to use trainId
     public Map<String, Object> getTrainExposureReport(Long trainId) {
         List<TrainBrandingAssignment> assignments = getAssignmentsByTrain(trainId);
 

@@ -14,7 +14,7 @@ import java.util.List;
 @Repository
 public interface TripHistoryRepository extends JpaRepository<TripHistory, String> {
 
-    List<TripHistory> findByTrain(Train train);
+   ;
 
     @Query("SELECT th FROM TripHistory th WHERE th.tripStartTime BETWEEN :startTime AND :endTime")
     List<TripHistory> findTripsBetween(@Param("startTime") LocalDateTime startTime,

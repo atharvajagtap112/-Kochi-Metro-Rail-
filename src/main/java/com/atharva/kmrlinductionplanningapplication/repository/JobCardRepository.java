@@ -17,15 +17,31 @@ import java.util.List;
 @Repository
 public interface JobCardRepository extends JpaRepository<JobCard, String> {
 
+
+
+
+
+
+
+
+
+
+
+
+
     List<JobCard> findByStatus(JobCardStatus status);
 
-    List<JobCard> findByTrain(Train train);
+    List<JobCard> findByTrainId(Long trainId);
 
-    List<JobCard> findByTrainAndStatus(Train train, JobCardStatus status);
+    // ✅ Removed - no longer needed since we use trainId
+    // List<JobCard> findByTrainAndStatus(Train train, JobCardStatus status);
+
+    // ✅ Added replacement method using trainId
+    List<JobCard> findByTrainIdAndStatus(Long trainId, JobCardStatus status);
 
     List<JobCard> findByPriority(Priority priority);
 
-    List<JobCard> findByAssignedTo(String teamName); // Changed from technician to team
+    List<JobCard> findByAssignedTo(String teamName);
 
     @Query("SELECT jc FROM JobCard jc WHERE jc.status != 'CLOSED'")
     List<JobCard> findAllOpenJobCards();
@@ -33,17 +49,16 @@ public interface JobCardRepository extends JpaRepository<JobCard, String> {
     @Query("SELECT jc FROM JobCard jc WHERE jc.targetCompletionDate < :currentTime AND jc.status != 'CLOSED'")
     List<JobCard> findOverdueJobCards(@Param("currentTime") LocalDateTime currentTime);
 
-    @Query("SELECT jc FROM JobCard jc WHERE jc.train.trainId = :trainId AND jc.status != 'CLOSED'")
+    // ✅ Fixed: Just use trainId directly
+    @Query("SELECT jc FROM JobCard jc WHERE jc.trainId = :trainId AND jc.status != 'CLOSED'")
     List<JobCard> findOpenJobCardsByTrainId(@Param("trainId") Long trainId);
 
-    @Query("SELECT jc FROM JobCard jc WHERE jc.assignedTo = :teamName AND jc.status = 'INPRG'")
+    @Query("SELECT jc FROM JobCard jc WHERE jc.assignedTo = :teamName AND jc.status = 'IN_PROGRESS'")
     List<JobCard> findActiveJobCardsByTeam(@Param("teamName") String teamName);
 
-    // New query to find job cards by trainset ID (external system ID)
     @Query("SELECT jc FROM JobCard jc WHERE jc.trainsetId = :trainsetId")
     List<JobCard> findByTrainsetId(@Param("trainsetId") String trainsetId);
 
-    // Critical job cards that are blocking train service
     @Query("SELECT jc FROM JobCard jc WHERE jc.priority = 'CRITICAL' AND jc.status != 'CLOSED'")
     List<JobCard> findCriticalOpenJobCards();
 }

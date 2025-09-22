@@ -1,6 +1,5 @@
 package com.atharva.kmrlinductionplanningapplication.service;
 
-
 import com.atharva.kmrlinductionplanningapplication.entity.BrandingExposureLog;
 import com.atharva.kmrlinductionplanningapplication.entity.Train;
 import com.atharva.kmrlinductionplanningapplication.entity.TrainBrandingAssignment;
@@ -21,17 +20,16 @@ import java.util.Map;
 import java.util.Optional;
 
 @Service
-
 public class DailyMileageUpdateService {
 
     @Autowired
-    private  TrainRepository trainRepository;
+    private TrainRepository trainRepository;
     @Autowired
-    private  TripHistoryRepository tripHistoryRepository;
+    private TripHistoryRepository tripHistoryRepository;
     @Autowired
-    private  TrainBrandingAssignmentRepository brandingAssignmentRepository;
+    private TrainBrandingAssignmentRepository brandingAssignmentRepository;
     @Autowired
-    private  BrandingExposureLogRepository exposureLogRepository;
+    private BrandingExposureLogRepository exposureLogRepository;
 
     @Transactional
     public void updateDailyMileageForAllTrains() {
@@ -52,13 +50,13 @@ public class DailyMileageUpdateService {
         Train train = trainOpt.get();
         LocalDate today = LocalDate.now();
 
-        // Get today's trips for this train
         LocalDateTime startOfDay = today.atStartOfDay();
         LocalDateTime endOfDay = today.atTime(23, 59, 59);
 
+        // ✅ Fixed to use trainId
         List<TripHistory> todaysTrips = tripHistoryRepository.findTripsBetween(startOfDay, endOfDay)
                 .stream()
-                .filter(trip -> trip.getTrain().getTrainId().equals(trainId))
+                .filter(trip -> trip.getTrainId().equals(trainId))
                 .toList();
 
         if (todaysTrips.isEmpty()) {
@@ -71,24 +69,21 @@ public class DailyMileageUpdateService {
             );
         }
 
-        // Calculate total mileage for today
         double todaysMileage = todaysTrips.stream()
                 .mapToDouble(TripHistory::getTripMileage)
                 .sum();
 
-        // Calculate total service hours for today
         int totalServiceMinutes = todaysTrips.stream()
                 .mapToInt(TripHistory::getTripDuration)
                 .sum();
 
         int totalServiceHours = totalServiceMinutes / 60;
 
-        // Update train odometer
         double currentOdometer = train.getCurrentOdometer() != null ? train.getCurrentOdometer() : 0.0;
         train.setCurrentOdometer(currentOdometer + todaysMileage);
         trainRepository.save(train);
 
-        // Update branding exposure for all active assignments
+        // ✅ Fixed branding update
         boolean brandingUpdated = updateBrandingExposure(train, todaysMileage, totalServiceHours, todaysTrips);
 
         return Map.of(
@@ -103,9 +98,10 @@ public class DailyMileageUpdateService {
         );
     }
 
+    // ✅ Fixed to use trainId
     private boolean updateBrandingExposure(Train train, double todaysMileage, int serviceHours, List<TripHistory> trips) {
         List<TrainBrandingAssignment> activeAssignments = brandingAssignmentRepository
-                .findByTrain(train)
+                .findByTrainId(train.getTrainId())
                 .stream()
                 .filter(assignment -> assignment.getStatus() == TrainBrandingAssignment.AssignmentStatus.ACTIVE)
                 .toList();
@@ -117,20 +113,17 @@ public class DailyMileageUpdateService {
         LocalDate today = LocalDate.now();
 
         for (TrainBrandingAssignment assignment : activeAssignments) {
-            // Create exposure log for today
             BrandingExposureLog exposureLog = new BrandingExposureLog();
             exposureLog.setTrainBrandingAssignment(assignment);
             exposureLog.setLogDate(today);
             exposureLog.setHoursExposed(serviceHours);
             exposureLog.setMileageCovered(todaysMileage);
 
-            // Set odometer readings
             if (!trips.isEmpty()) {
-                exposureLog.setStartOdometer(trips.get(0).getTrain().getCurrentOdometer() - todaysMileage);
-                exposureLog.setEndOdometer(trips.get(trips.size() - 1).getTrain().getCurrentOdometer());
+                exposureLog.setStartOdometer(train.getCurrentOdometer() - todaysMileage);
+                exposureLog.setEndOdometer(train.getCurrentOdometer());
             }
 
-            // Calculate route details
             String routesCovered = trips.stream()
                     .map(TripHistory::getRouteId)
                     .distinct()
@@ -140,22 +133,19 @@ public class DailyMileageUpdateService {
             exposureLog.setRoutesCovered(routesCovered);
             exposureLog.setTotalTrips(trips.size());
 
-            // Calculate passenger exposure
             int totalPassengers = trips.stream()
-                    .mapToInt(trip -> (int) (trip.getPassengerLoadFactor() * 100)) // Assuming load factor is 0-1
+                    .mapToInt(trip -> (int) (trip.getPassengerLoadFactor() * 100))
                     .sum();
 
             exposureLog.setPassengerCount(totalPassengers);
             exposureLog.setServiceType(BrandingExposureLog.ServiceType.REGULAR);
             exposureLog.setExposureQuality(BrandingExposureLog.ExposureQuality.NORMAL);
-            exposureLog.setWeatherCondition(BrandingExposureLog.WeatherCondition.CLEAR); // Default, can be updated
+            exposureLog.setWeatherCondition(BrandingExposureLog.WeatherCondition.CLEAR);
             exposureLog.setRemarks("Auto-generated daily exposure log");
             exposureLog.setLoggedBy("SYSTEM");
 
-            // Save exposure log
             exposureLogRepository.save(exposureLog);
 
-            // Update assignment totals
             assignment.setTotalHoursExposed(assignment.getTotalHoursExposed() + serviceHours);
             assignment.setTotalMileageExposed(assignment.getTotalMileageExposed() + todaysMileage);
             assignment.setAverageDailyMileage(
@@ -169,7 +159,7 @@ public class DailyMileageUpdateService {
         return true;
     }
 
-    // Method to manually log a trip and update mileage
+    // ✅ Fixed to use trainId
     @Transactional
     public TripHistory logTripAndUpdateMileage(String tripId, Long trainId, String routeId,
                                                LocalDateTime startTime, LocalDateTime endTime,
@@ -182,10 +172,9 @@ public class DailyMileageUpdateService {
 
         Train train = trainOpt.get();
 
-        // Create trip history
         TripHistory trip = new TripHistory();
         trip.setTripId(tripId);
-        trip.setTrain(train);
+        trip.setTrainId(trainId); // ✅ Using trainId directly
         trip.setRouteId(routeId);
         trip.setTripStartTime(startTime);
         trip.setTripEndTime(endTime);
@@ -195,12 +184,10 @@ public class DailyMileageUpdateService {
 
         TripHistory savedTrip = tripHistoryRepository.save(trip);
 
-        // Update train odometer
         double currentOdometer = train.getCurrentOdometer() != null ? train.getCurrentOdometer() : 0.0;
         train.setCurrentOdometer(currentOdometer + tripMileage);
         trainRepository.save(train);
 
-        // Update branding if trip is today
         if (startTime.toLocalDate().equals(LocalDate.now())) {
             int serviceHours = trip.getTripDuration() / 60;
             updateBrandingExposure(train, tripMileage, serviceHours, List.of(trip));
@@ -209,7 +196,6 @@ public class DailyMileageUpdateService {
         return savedTrip;
     }
 
-    // Get daily mileage summary
     public Map<String, Object> getDailyMileageSummary(LocalDate date) {
         LocalDateTime startOfDay = date.atStartOfDay();
         LocalDateTime endOfDay = date.atTime(23, 59, 59);
@@ -218,7 +204,7 @@ public class DailyMileageUpdateService {
 
         double totalMileage = dayTrips.stream().mapToDouble(TripHistory::getTripMileage).sum();
         int totalTrips = dayTrips.size();
-        long uniqueTrains = dayTrips.stream().map(trip -> trip.getTrain().getTrainId()).distinct().count();
+        long uniqueTrains = dayTrips.stream().map(TripHistory::getTrainId).distinct().count(); // ✅ Fixed
 
         return Map.of(
                 "date", date,

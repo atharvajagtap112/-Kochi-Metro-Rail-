@@ -4,6 +4,7 @@ package com.atharva.kmrlinductionplanningapplication.service;
 import com.atharva.kmrlinductionplanningapplication.entity.JobCard;
 import com.atharva.kmrlinductionplanningapplication.entity.Train;
 import com.atharva.kmrlinductionplanningapplication.enums.JobCardStatus;
+import com.atharva.kmrlinductionplanningapplication.enums.TrainStatus;
 import com.atharva.kmrlinductionplanningapplication.repository.JobCardRepository;
 import com.atharva.kmrlinductionplanningapplication.repository.TrainRepository;
 
@@ -19,6 +20,11 @@ public class JobCardService {
 
     private  JobCardRepository jobCardRepository;
     private  TrainRepository trainRepository;
+
+    public JobCardService(JobCardRepository jobCardRepository, TrainRepository trainRepository) {
+        this.jobCardRepository = jobCardRepository;
+        this.trainRepository = trainRepository;
+    }
 
     public List<JobCard> getAllJobCards() {
         return jobCardRepository.findAll();
@@ -36,10 +42,10 @@ public class JobCardService {
         return jobCardRepository.findCriticalOpenJobCards();
     }
 
-    public List<JobCard> getJobCardsByTrain(Long trainId) {
+    public List<JobCard> getJobCardsByTrain(java.lang.Long trainId) {
         Optional<Train> train = trainRepository.findById(trainId);
         if (train.isPresent()) {
-            return jobCardRepository.findByTrain(train.get());
+            return jobCardRepository.findByTrainId(train.get().getTrainId());
         }
         return List.of();
     }
@@ -53,7 +59,7 @@ public class JobCardService {
     }
 
     public JobCard createJobCard(JobCard jobCard) {
-        jobCard.setStatus(JobCardStatus.WAPPR); // Default status
+        jobCard.setStatus(JobCardStatus.OPEN); // Default status
         return jobCardRepository.save(jobCard);
     }
 
@@ -68,6 +74,9 @@ public class JobCardService {
             jobCard.setStatus(JobCardStatus.CLOSED);
             jobCard.setActualEnd(LocalDateTime.now());
             jobCardRepository.save(jobCard);
+
+            Train train=trainRepository.getTrainByTrainId(jobCardOpt.get().getTrainId());
+            train.setStatus(TrainStatus.ACTIVE);
             return true;
         }
         return false;
@@ -75,12 +84,18 @@ public class JobCardService {
 
     public boolean startJobCard(String jobCardId, String teamName) {
         Optional<JobCard> jobCardOpt = jobCardRepository.findById(jobCardId);
+
         if (jobCardOpt.isPresent()) {
             JobCard jobCard = jobCardOpt.get();
             jobCard.setStatus(JobCardStatus.INPRG);
             jobCard.setActualStart(LocalDateTime.now());
             jobCard.setAssignedTo(teamName);
             jobCardRepository.save(jobCard);
+
+
+            Train train=trainRepository.getTrainByTrainId(jobCardOpt.get().getTrainId());
+             train.setStatus(TrainStatus.MAINTENANCE);
+
             return true;
         }
         return false;
@@ -95,6 +110,8 @@ public class JobCardService {
             jobCard.setDetails(details);
             jobCard.setLaborHoursLogged(laborHours);
             jobCardRepository.save(jobCard);
+
+
             return true;
         }
         return false;
@@ -109,7 +126,7 @@ public class JobCardService {
         // Map trainset ID to internal train ID if needed
         Optional<Train> train = trainRepository.findByTrainNumber(externalJobCard.getTrainsetId());
         if (train.isPresent()) {
-            externalJobCard.setTrain(train.get());
+            externalJobCard.setTrainId(train.get().getTrainId());
         }
 
         return jobCardRepository.save(externalJobCard);

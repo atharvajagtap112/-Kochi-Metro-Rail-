@@ -3,7 +3,6 @@ package com.atharva.kmrlinductionplanningapplication.entity;
 
 
 import com.atharva.kmrlinductionplanningapplication.enums.BrandingType;
-import com.atharva.kmrlinductionplanningapplication.enums.WrapType;
 
 import jakarta.persistence.*;
 
@@ -19,7 +18,7 @@ import java.util.List;
 public class BrandingContract {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     private Long contractId;
 
     @Column(nullable = false)

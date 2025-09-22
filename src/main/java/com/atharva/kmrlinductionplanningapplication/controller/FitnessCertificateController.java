@@ -4,6 +4,7 @@ package com.atharva.kmrlinductionplanningapplication.controller;
 import com.atharva.kmrlinductionplanningapplication.entity.FitnessCertificate;
 import com.atharva.kmrlinductionplanningapplication.service.FitnessCertificateService;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,7 +16,7 @@ import java.util.Optional;
 
 @CrossOrigin(origins = "*")
 public class FitnessCertificateController {
-
+    @Autowired
     private  FitnessCertificateService certificateService;
 
     @GetMapping
@@ -33,7 +34,7 @@ public class FitnessCertificateController {
 
     @GetMapping("/train/{trainId}")
     public ResponseEntity<List<FitnessCertificate>> getCertificatesByTrain(@PathVariable Long trainId) {
-        List<FitnessCertificate> certificates = certificateService.getCertificatesByTrain(trainId);
+        List<FitnessCertificate> certificates = certificateService.getCertificatesByTrainId(trainId);
         return ResponseEntity.ok(certificates);
     }
 

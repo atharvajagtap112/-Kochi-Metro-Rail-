@@ -1,28 +1,21 @@
 package com.atharva.kmrlinductionplanningapplication.entity;
 
-
-
 import com.atharva.kmrlinductionplanningapplication.enums.CertificateStatus;
 import com.atharva.kmrlinductionplanningapplication.enums.Department;
-
 import jakarta.persistence.*;
-
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "fitness_certificates")
-
 public class FitnessCertificate {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     private Long certificateId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "train_id", nullable = false)
-    private Train train;
+    @Column(name = "train_id", nullable = false)
+    private Long trainId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -50,18 +43,14 @@ public class FitnessCertificate {
     private String inspectionDetails;
 
     private String approvedBy;
-
     private LocalDate lastInspectionDate;
-
     private LocalDate nextInspectionDue;
 
     @Column(columnDefinition = "TEXT")
     private String complianceNotes;
 
     private Boolean isRenewal = false;
-
     private String previousCertificateId;
-
     private LocalDateTime lastUpdated;
 
     @PrePersist
@@ -70,17 +59,26 @@ public class FitnessCertificate {
         this.lastUpdated = LocalDateTime.now();
     }
 
+    // Constructors
     public FitnessCertificate() {}
 
-    // Parameterized constructor
-    public FitnessCertificate(Long certificateId, Train train, Department department,
-                              LocalDate issueDate, LocalDate expiryDate, CertificateStatus status,
-                              String issuedBy, String certificateNumber, String remarks,
-                              String inspectionDetails, String approvedBy, LocalDate lastInspectionDate,
-                              LocalDate nextInspectionDue, String complianceNotes, Boolean isRenewal,
-                              String previousCertificateId, LocalDateTime lastUpdated) {
+    // Getters and Setters
+    public Long getCertificateId() {
+        return certificateId;
+    }
+
+
+    public Boolean getRenewal() {
+        return isRenewal;
+    }
+
+    public void setRenewal(Boolean renewal) {
+        isRenewal = renewal;
+    }
+
+    public FitnessCertificate(Long certificateId, Long trainId, Department department, LocalDate issueDate, LocalDate expiryDate, CertificateStatus status, String issuedBy, String certificateNumber, String remarks, String inspectionDetails, String approvedBy, LocalDate lastInspectionDate, LocalDate nextInspectionDue, String complianceNotes, Boolean isRenewal, String previousCertificateId, LocalDateTime lastUpdated) {
         this.certificateId = certificateId;
-        this.train = train;
+        this.trainId = trainId;
         this.department = department;
         this.issueDate = issueDate;
         this.expiryDate = expiryDate;
@@ -98,23 +96,19 @@ public class FitnessCertificate {
         this.lastUpdated = lastUpdated;
     }
 
-    // Getters and Setters
-    public Long getCertificateId() {
-        return certificateId;
-    }
-
     public void setCertificateId(Long certificateId) {
         this.certificateId = certificateId;
     }
 
-    public Train getTrain() {
-        return train;
+    public Long getTrainId() {
+        return trainId;
     }
 
-    public void setTrain(Train train) {
-        this.train = train;
+    public void setTrainId(Long trainId) {
+        this.trainId = trainId;
     }
 
+    // ... rest of getters and setters
     public Department getDepartment() {
         return department;
     }
@@ -234,5 +228,4 @@ public class FitnessCertificate {
     public void setLastUpdated(LocalDateTime lastUpdated) {
         this.lastUpdated = lastUpdated;
     }
-
 }

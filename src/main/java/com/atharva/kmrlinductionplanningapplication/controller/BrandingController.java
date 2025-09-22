@@ -20,7 +20,7 @@ import java.util.Optional;
 @CrossOrigin(origins = "*")
 public class BrandingController {
 
-
+    @Autowired
     private  BrandingService brandingService;
     public BrandingController (BrandingService brandingService) {
         this.brandingService=brandingService;
@@ -50,6 +50,14 @@ public class BrandingController {
     public ResponseEntity<BrandingContract> createContract(@RequestBody BrandingContract contract) {
         BrandingContract savedContract = brandingService.createContract(contract);
         return ResponseEntity.ok(savedContract);
+    }
+
+    @PostMapping("all/contracts")
+    public ResponseEntity<List<BrandingContract>> createAllContract(@RequestBody List<BrandingContract> contracts) {
+        for (BrandingContract contract : contracts) {
+         brandingService.createContract(contract);
+        }
+        return ResponseEntity.ok(contracts);
     }
 
     // ASSIGNMENTS

@@ -1,6 +1,7 @@
 package com.atharva.kmrlinductionplanningapplication.repository;
 
 import com.atharva.kmrlinductionplanningapplication.entity.CleaningTask;
+import com.atharva.kmrlinductionplanningapplication.entity.JobCard;
 import com.atharva.kmrlinductionplanningapplication.entity.Train;
 import com.atharva.kmrlinductionplanningapplication.enums.CleaningType;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,8 +15,11 @@ import java.util.List;
 @Repository
 public interface CleaningTaskRepository extends JpaRepository<CleaningTask, String> {
 
-    List<CleaningTask> findByTrain(Train train);
 
+
+
+    // ✅ Using trainId
+    List<CleaningTask> findByTrainId(Long trainId);
     List<CleaningTask> findByStatus(CleaningTask.TaskStatus status);
 
     List<CleaningTask> findByCleaningType(CleaningType cleaningType);
@@ -26,8 +30,7 @@ public interface CleaningTaskRepository extends JpaRepository<CleaningTask, Stri
     List<CleaningTask> findTasksScheduledBetween(@Param("startTime") LocalDateTime startTime,
                                                  @Param("endTime") LocalDateTime endTime);
 
-    @Query("SELECT ct FROM CleaningTask ct WHERE ct.train.trainId = :trainId ORDER BY ct.scheduledStart DESC")
-    List<CleaningTask> findTasksByTrainIdOrderByScheduledStart(@Param("trainId") Long trainId);
+
 
     @Query("SELECT ct FROM CleaningTask ct WHERE ct.status = 'IN_PROGRESS'")
     List<CleaningTask> findActiveCleaningTasks();

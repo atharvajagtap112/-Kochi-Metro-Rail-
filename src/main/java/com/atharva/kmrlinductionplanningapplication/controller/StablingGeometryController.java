@@ -4,6 +4,7 @@ package com.atharva.kmrlinductionplanningapplication.controller;
 import com.atharva.kmrlinductionplanningapplication.entity.StablingGeometry;
 import com.atharva.kmrlinductionplanningapplication.service.StablingGeometryService;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,8 +17,8 @@ import java.util.Optional;
 
 @CrossOrigin(origins = "*")
 public class StablingGeometryController {
-
-    private  StablingGeometryService stablingService;
+     @Autowired
+    private StablingGeometryService stablingService;
 
     @GetMapping("/bays")
     public ResponseEntity<List<StablingGeometry>> getAllBays() {

@@ -1,6 +1,5 @@
 package com.atharva.kmrlinductionplanningapplication.service;
 
-
 import com.atharva.kmrlinductionplanningapplication.entity.Train;
 import com.atharva.kmrlinductionplanningapplication.entity.TrainBrandingAssignment;
 import com.atharva.kmrlinductionplanningapplication.enums.TrainStatus;
@@ -9,6 +8,7 @@ import com.atharva.kmrlinductionplanningapplication.repository.JobCardRepository
 import com.atharva.kmrlinductionplanningapplication.repository.TrainBrandingAssignmentRepository;
 import com.atharva.kmrlinductionplanningapplication.repository.TrainRepository;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -19,13 +19,15 @@ import java.util.Map;
 import java.util.HashMap;
 
 @Service
-
 public class TrainService {
-
-    private  TrainRepository trainRepository;
-    private  JobCardRepository jobCardRepository;
-    private  FitnessCertificateRepository fitnessCertificateRepository;
-    private  TrainBrandingAssignmentRepository brandingAssignmentRepository;
+    @Autowired
+    private TrainRepository trainRepository;
+    @Autowired
+    private JobCardRepository jobCardRepository;
+    @Autowired
+    private FitnessCertificateRepository fitnessCertificateRepository;
+    @Autowired
+    private TrainBrandingAssignmentRepository brandingAssignmentRepository;
 
     public List<Train> getAllTrains() {
         return trainRepository.findAll();
@@ -39,7 +41,11 @@ public class TrainService {
         return trainRepository.findByTrainNumber(trainNumber);
     }
 
-    // 🔥 UPDATED: Complete availability check with all 6 parameters
+    public List<Train> saveAllTrains(List<Train> trains) {
+        trains.forEach(train -> train.setLastUpdated(LocalDateTime.now()));
+        return trainRepository.saveAll(trains);
+    }
+
     public List<Map<String, Object>> getAvailableTrainsWithDetails() {
         List<Train> allActiveTrains = trainRepository.findByStatus(TrainStatus.ACTIVE);
 
@@ -49,7 +55,6 @@ public class TrainService {
                 .toList();
     }
 
-
     public List<Train> getAvailableTrainsForInduction() {
         List<Train> allActiveTrains = trainRepository.findByStatus(TrainStatus.ACTIVE);
 
@@ -58,69 +63,68 @@ public class TrainService {
                 .toList();
     }
 
-    // 🔥 NEW: Check ALL conditions for train readiness
     private boolean isTrainCompletelyReady(Train train) {
-        // 1. No open job cards (all must be CLOSED)
-        boolean hasNoOpenJobCards = jobCardRepository.findOpenJobCardsByTrainId(train.getTrainId()).isEmpty();
-
-        // 2. All fitness certificates are valid and not expired
-        boolean hasAllValidCertificates = fitnessCertificateRepository
+        // 1. No open job cards
+        boolean hasNoOpenJobCards =train.getJobCards().isEmpty()?true: jobCardRepository.findOpenJobCardsByTrainId(train.getTrainId()).isEmpty();
+        System.out.println(train.getTrainId()+":"+"Open Jobcards"+hasNoOpenJobCards);
+        // 2. All fitness certificates are valid
+        boolean hasAllValidCertificates =train.getFitnessCertificates().isEmpty()?true:  fitnessCertificateRepository
                 .hasAllValidCertificates(train.getTrainId(), LocalDate.now());
 
         // 3. Maintenance not due
         boolean maintenanceNotDue = !calculateMaintenanceDue(train);
 
-        // 4. Cleaning is done (within the cleaning period)
+        // 4. Cleaning done
         boolean cleaningDone = !calculateCleaningDue(train);
 
-        // All conditions must be true for train to be available
+
+        // Debug logging
+        System.out.println("Train " + train.getTrainNumber() + ":");
+        System.out.println("  - hasNoOpenJobCards: " + hasNoOpenJobCards);
+        System.out.println("  - hasAllValidCertificates: " + hasAllValidCertificates);
+        System.out.println("  - maintenanceNotDue: " + maintenanceNotDue);
+        System.out.println("  - cleaningDone: " + cleaningDone);
+        System.out.println("  - Overall ready: " + (hasNoOpenJobCards && hasAllValidCertificates && maintenanceNotDue && cleaningDone));
+
         return hasNoOpenJobCards && hasAllValidCertificates && maintenanceNotDue && cleaningDone;
     }
 
-    // 🔥 NEW: Build comprehensive response with branding info
     private Map<String, Object> buildAvailableTrainResponse(Train train) {
         Map<String, Object> response = new HashMap<>();
 
-        // Basic train info
         response.put("trainId", train.getTrainId());
         response.put("trainNumber", train.getTrainNumber());
         response.put("status", train.getStatus());
         response.put("currentOdometer", train.getCurrentOdometer());
         response.put("depotLocation", train.getDepotLocation());
 
-        // Readiness status
         response.put("jobCardsStatus", "ALL_CLOSED");
         response.put("certificatesStatus", "ALL_VALID");
         response.put("maintenanceStatus", "NOT_DUE");
         response.put("cleaningStatus", "DONE");
 
-        // Mileage info
         double mileageBalance = calculateMileageBalance(train.getTrainId());
         response.put("mileageBalance", mileageBalance);
         response.put("mileageUtilization", calculateMileageUtilization(train));
 
-        // 🔥 BRANDING INFORMATION - Critical for operations team!
+        // ✅ Fixed branding info
         Map<String, Object> brandingInfo = getBrandingInfoForTrain(train.getTrainId());
         response.put("brandingInfo", brandingInfo);
 
-        // Priority score (higher = should run first)
         int priorityScore = calculatePriorityScore(train, brandingInfo);
         response.put("priorityScore", priorityScore);
         response.put("recommendedForService", true);
 
-        // Last updated
         response.put("lastUpdated", LocalDateTime.now());
 
         return response;
     }
 
-    // 🔥 NEW: Get complete branding information
+    // ✅ Fixed to use trainId
     private Map<String, Object> getBrandingInfoForTrain(Long trainId) {
         Map<String, Object> brandingInfo = new HashMap<>();
 
-        List<TrainBrandingAssignment> assignments = brandingAssignmentRepository.findByTrain(
-                trainRepository.findById(trainId).orElse(null)
-        );
+        List<TrainBrandingAssignment> assignments = brandingAssignmentRepository.findByTrainId(trainId);
 
         if (assignments.isEmpty()) {
             brandingInfo.put("hasBranding", false);
@@ -143,15 +147,14 @@ public class TrainService {
                     Map<String, Object> contract = new HashMap<>();
                     contract.put("contractId", assignment.getBrandingContract().getContractId());
                     contract.put("advertiserName", assignment.getBrandingContract().getAdvertiserName());
-                    contract.put("BrandingType", assignment.getBrandingContract().getBrandingType());
+                    contract.put("brandingType", assignment.getBrandingContract().getBrandingType());
                     contract.put("requiredHours", assignment.getBrandingContract().getRequiredHours());
                     contract.put("exposedHours", assignment.getTotalHoursExposed());
 
-                    // Calculate completion percentage
                     double completion = (double) assignment.getTotalHoursExposed() /
                             assignment.getBrandingContract().getRequiredHours() * 100;
                     contract.put("completionPercentage", completion);
-                    contract.put("isAtRisk", completion < 80); // Less than 80% is at risk
+                    contract.put("isAtRisk", completion < 80);
 
                     return contract;
                 })
@@ -159,16 +162,15 @@ public class TrainService {
 
         brandingInfo.put("activeContracts", activeContracts);
 
-        // Determine priority based on contract risk
         boolean hasAtRiskContracts = activeContracts.stream()
                 .anyMatch(contract -> (Boolean) contract.get("isAtRisk"));
 
         if (hasAtRiskContracts) {
-            brandingInfo.put("priorityLevel", "HIGH"); // Must run to meet SLA
+            brandingInfo.put("priorityLevel", "HIGH");
         } else if (!activeContracts.isEmpty()) {
-            brandingInfo.put("priorityLevel", "MEDIUM"); // Has branding but not at risk
+            brandingInfo.put("priorityLevel", "MEDIUM");
         } else {
-            brandingInfo.put("priorityLevel", "LOW"); // No active branding
+            brandingInfo.put("priorityLevel", "LOW");
         }
 
         brandingInfo.put("atRiskContracts", hasAtRiskContracts);
@@ -176,36 +178,32 @@ public class TrainService {
         return brandingInfo;
     }
 
-    // 🔥 NEW: Calculate priority score for train selection
     private int calculatePriorityScore(Train train, Map<String, Object> brandingInfo) {
-        int score = 100; // Base score
+        int score = 100;
 
-        // Branding priority (most important for revenue)
         String priorityLevel = (String) brandingInfo.get("priorityLevel");
         switch (priorityLevel) {
-            case "HIGH" -> score += 50;  // At-risk contracts - must run!
-            case "MEDIUM" -> score += 25; // Has branding contracts
-            case "LOW" -> score += 0;     // No branding
+            case "HIGH" -> score += 50;
+            case "MEDIUM" -> score += 25;
+            case "LOW" -> score += 0;
         }
 
-        // Mileage balance (prevent maintenance due soon)
         double mileageBalance = calculateMileageBalance(train.getTrainId());
         if (mileageBalance > 2000) {
-            score += 20; // Plenty of mileage left
+            score += 20;
         } else if (mileageBalance > 1000) {
-            score += 10; // Moderate mileage left
+            score += 10;
         } else {
-            score -= 10; // Low mileage, should go to maintenance soon
+            score -= 10;
         }
 
-        // Recent cleaning (fresher trains get slight priority)
         if (train.getLastCleaningDateTime() != null) {
             long hoursSinceCleaning = java.time.Duration.between(
                     train.getLastCleaningDateTime(), LocalDateTime.now()
             ).toHours();
 
             if (hoursSinceCleaning < 12) {
-                score += 10; // Recently cleaned
+                score += 10;
             }
         }
 
@@ -247,7 +245,6 @@ public class TrainService {
         return false;
     }
 
-    // 🔥 UPDATED: Complete validation with all parameters
     public boolean validateTrainForService(Long trainId) {
         Optional<Train> trainOpt = trainRepository.findById(trainId);
         if (trainOpt.isEmpty()) {
@@ -269,11 +266,11 @@ public class TrainService {
 
     private boolean calculateCleaningDue(Train train) {
         if (train.getLastCleaningDateTime() == null) {
-            return true; // No cleaning record, so it's due
+            return true;
         }
 
         LocalDateTime cleaningDueTime = train.getLastCleaningDateTime()
-                .plusHours(train.getCleaningPeriod());
+                .plusHours(24);
 
         return LocalDateTime.now().isAfter(cleaningDueTime);
     }
